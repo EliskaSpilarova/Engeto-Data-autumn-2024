@@ -147,6 +147,145 @@ WHERE municipality in ('Brno', 'Praha', 'Ostrava');
 
 DROP VIEW IF EXISTS v_healthcare_provider_subset;
 
+--Bonusová cvičení: COVID-19 - ORDER BY
+
+-- Úkol 1:
+-- Vyberte sloupec country, date a confirmed z tabulky covid19_basic pro Rakousko. Seřaďte sestupně podle sloupce date.
+SELECT 
+	country,
+	date,
+	confirmed
+FROM covid19_basic cb 
+WHERE country = 'Austria'
+ORDER BY date desc;
+
+-- Úkol 2:
+-- Vyberte pouze sloupec deaths v České republice.
+SELECT
+	deaths 
+FROM covid19_basic cb 
+WHERE country = 'Czechia';
+
+-- Úkol 3:
+-- Vyberte pouze sloupec deaths v České republice. Seřaďte sestupně podle sloupce date.
+SELECT 
+	deaths
+FROM covid19_basic cb 
+WHERE country = 'Czechia'
+ORDER BY date DESC;
+
+-- Úkol 4:
+-- Zjistěte, kolik nakažených bylo k poslednímu srpnu 2020 po celém světě.
+SELECT 
+	sum(confirmed) 
+FROM covid19_basic cb 
+WHERE date = '2020-08-31';
+
+-- Úkol 5:
+-- Vyberte seznam provincií v US a seřadte jej podle názvu.
+SELECT DISTINCT province
+FROM covid19_detail_us cdu 
+ORDER BY province;
+
+-- Úkol 6:
+-- Vyberte pouze Českou republiku, seřaďte podle datumu a vytvořte nový sloupec udávající rozdíl mezi recovered a confirmed.
+SELECT 
+	*,
+	confirmed - recovered AS ill
+FROM covid19_basic cb 
+WHERE country = 'Czechia'
+ORDER BY date;
+
+-- Úkol 7:
+-- Vyberte 10 zemí s největším přírůstkem k 1. 7. 2020 a seřaďte je od největšího nárůstů k nejmenšímu.
+SELECT 
+	country,
+	confirmed
+FROM covid19_basic_differences cbd _differences
+WHERE date = '2020-07-01'
+ORDER BY confirmed desc
+LIMIT 10;
+
+-- Úkol 8:
+-- Vytvořte sloupec, kde přiřadíte 1 těm zemím, které mají přírůstek nakažených vetši než 10000 k 30. 8. 2020. 
+-- Seřaďte je sestupně podle velikosti přírůstku nakažených.
+SELECT 
+	country,
+	confirmed,
+CASE
+	WHEN confirmed > 10000
+	THEN 1
+	ELSE 0
+END AS vetsi_nez_10000
+FROM covid19_basic_differences cbd 
+WHERE date = '2020-08-30'
+ORDER BY confirmed DESC;
+
+-- Úkol 9:
+-- Zjistěte, kterým datumem začíná a končí tabulka covid19_detail_us.
+SELECT DISTINCT date
+FROM covid19_detail_us cdu 
+ORDER BY date;
+
+SELECT DISTINCT date
+FROM covid19_detail_us cdu 
+ORDER BY date desc;
+
+-- Úkol 10:
+-- Seřaďte tabulku covid19_basic podle států od A po Z a podle data sestupně.
+SELECT *
+FROM covid19_basic cb 
+ORDER BY country, date DESC;
+
+-- Bonusová cvičení: COVID-19 - WHERE, IN a LIKE
+-- Úkol 1
+-- Vytvořte view obsahující kumulativní průběh jen ve Spojených státech, Číně a Indii. Použijte syntaxi s IN.
+CREATE VIEW v_view AS 
+	SELECT *
+	FROM covid19_basic cb 
+	WHERE country IN ('USA', 'China', 'India');
+
+-- Úkol 2
+-- Vyfiltrujte z tabulky covid19_basic pouze země, které mají populaci větší než 100 milionů.
+SELECT *
+FROM covid19_basic cb 
+WHERE country IN
+	(SELECT DISTINCT country
+	FROM lookup_table lt 
+	WHERE population >= 100000000);
+
+-- Úkol 3
+-- Vyfiltrujte z tabulky covid19_basic pouze země, které jsou zároveň obsaženy v tabulce covid19_detail_us.
+SELECT *
+FROM covid19_basic cb 
+WHERE country IN 
+	(SELECT DISTINCT country
+	FROM covid19_detail_us);
+
+-- Úkol 4
+-- Vyfiltrujte z tabulky covid19_basic seznam zemí, které měly alespoň jednou denní nárůst větší než 10 tisíc nově nakažených.
+SELECT DISTINCT country
+FROM covid19_basic cb 
+WHERE country IN
+	(SELECT DISTINCT country
+	FROM covid19_basic_differences 
+	WHERE confirmed >= 10000);
+
+-- Úkol 5
+-- Vyfiltrujte z tabulky covid19_basic seznam zemí, které nikdy neměly denní nárůst počtu nakažených větší než 1000.
+SELECT DISTINCT country
+FROM covid19_basic cb 
+WHERE country NOT IN
+	(SELECT country
+	FROM covid19_basic_differences
+	WHERE confirmed >= 1000);
+
+-- Úkol 6
+-- Vyfiltrujte z tabulky covid19_basic seznam zemí, které nezačínají písmenem A.
+SELECT DISTINCT country
+FROM covid19_basic cb 
+WHERE country NOT LIKE 'A%';
+
 
 
 	
