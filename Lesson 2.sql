@@ -286,6 +286,55 @@ SELECT DISTINCT country
 FROM covid19_basic cb 
 WHERE country NOT LIKE 'A%';
 
+-- Bonusová cvičení: COVID-19 - CASE Expression
+-- Úkol 1
+-- Vytvořte nový sloupec flag_vic_nez_10000. Zemím, které měly dne 30. 8. 2020 denní přírůstek nakažených vyšší než 10000, 
+-- přiřaďte hodnotu 1, ostatním hodnotu 0. Seřaďte země sestupně podle počtu nově potvrzených případů.
+SELECT 
+	country,
+	confirmed,
+	CASE 
+		WHEN confirmed > 10000 THEN 1
+		ELSE 0
+	END AS flag_vic_nez_10000
+FROM covid19_basic_differences cbd 
+WHERE date = '2020-08-30'
+ORDER BY confirmed DESC;
+
+-- Úkol 2
+-- Vytvořte nový sloupec flag_evropa a označte slovem Evropa země Německo, Francie, Španělsko. Zbytek zemí označte slovem Ostatni.
+SELECT *,
+	CASE
+		WHEN country IN ('Germany', 'France', 'Spain') THEN 'Evropa'
+		ELSE 'Ostatni'
+	END AS flag_evropa
+FROM covid19_basic_differences cbd;
+
+--Úkol 3
+-- Vytvořte nový sloupec s názvem flag_ge. Do něj uložte pro všechny země, začínající písmeny "Ge", 
+-- heslo GE zeme, ostatní země označte slovem Ostatni.
+SELECT *,
+	CASE 
+		WHEN country = 'Ge%' THEN 'Ge zeme'
+	ELSE 'Ostatni'
+	END AS flag_ge
+FROM covid19_basic_differences cbd;
+	
+-- Úkol 4
+-- Využijte tabulku covid19_basic_differences a vytvořte nový sloupec category. Ten bude obsahovat tři kategorie podle počtu
+-- nově potvrzených případů: 0-1000, 1000-10000 a >10000. Výslednou tabulku seřaďte podle data sestupně. 
+-- Vhodně také ošetřete možnost chybějících nebo chybně zadaných dat.
+SELECT *,
+	CASE
+		WHEN confirmed IS NULL OR confirmed >= 10000 THEN '>10000'
+		WHEN confirmed >= 1000 AND confirmed < 10000 THEN '1000-10000'
+		WHEN confirmed < 1000 THEN '0-1000'
+		ELSE 'error'
+	END AS category
+FROM covid19_basic_differences cbd
+ORDER BY date DESC;
+
+
 
 
 	
