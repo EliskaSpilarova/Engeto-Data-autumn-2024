@@ -231,3 +231,95 @@ FROM covid19_basic cb
 GROUP BY date,
 	country; 
 
+-- Bonusová cvičení: COVID-19 - funkce AVG() a COUNT()
+
+-- Úkol 1: Zjistěte průměrnou populaci ve státech ležících severně od 60 rovnoběžky.
+SELECT 
+    avg(population)
+FROM lookup_table lt 
+WHERE lat >= 60
+    AND province IS NULL;
+
+-- Úkol 2: Zjistěte průměrnou, nejvyšší a nejnižší populaci v zemích ležících severně od 60 rovnoběžky.
+-- Spočítejte, kolik takových zemích je. Vytvořte sloupec max_min_ratio, ve kterém nejvyšší populaci vydělíte nejnižší.
+SELECT 
+    avg(population),
+    max(population),
+    min(population),
+    count(DISTINCT country),
+    (max(population) / min(population)) AS max_min_ratio
+FROM lookup_table lt 
+WHERE lat >= 60;
+
+-- Úkol 3: Zjistěte průměrnou populaci a rozlohu v zemích seskupených podle náboženství. 
+-- Zjistěte také počet zemí pro každé náboženství.
+SELECT round(avg(population)),
+	round(avg(surface_area)),
+	religion,
+	count(country)
+FROM countries
+GROUP BY religion;
+
+-- Úkol 4: Zjistěte počet zemí, kde se platí dolarem (jakoukoli měnou, která má v názvu dolar).
+-- Zjistěte nejvyšší a nejnižší populaci mezi těmito zeměmi.
+SELECT count(country),
+	max(population),
+	min(population)
+FROM countries
+WHERE lower(currency_name) LIKE '%dollar%';
+
+-- Úkol 5: Zjistěte, kolik zemí platících Eurem leží v Evropě a kolik na jiných kontinentech.
+SELECT continent,
+	count(country) 
+FROM countries c
+WHERE currency_code = 'EUR'
+GROUP BY continent;
+
+-- Úkol 6: Zjistěte, pro kolik zemí známe průměrnou výšku jejích obyvatel.
+SELECT count (1)
+FROM countries c 
+WHERE avg_height IS NOT NULL; 
+
+-- Úkol 7: Zjistěte průměrnou výšku obyvatel na jednotlivých kontinentech.
+SELECT sum(avg_height),
+	continent
+FROM countries
+WHERE avg_height IS NOT null
+GROUP BY continent;
+
+-- Úkol 8: Zjistěte průměrnou hustotu zalidnění pro světový region (region_in_world). Srovnejte byčejný a vážený průměr. 
+-- Váhou bude v tomto případě rozloha státu (surface_area). Výslednou tabulku uložte jako v_{jméno}_{příjmení}_population_density.
+ -- Poznámka: V tomto případě nepočítáme "průměr průměrů", ale průměr zlomků (hustota zalidnění = populace / rozloha). 
+ -- Vyzkoušejte si, co by se stalo, pokud bychom jako váhu použili nikoli rozlohu (jmenovatel), ale populaci (čitatel). 
+ -- Jaká varianta Vám přijde vhodnější?--
+CREATE OR REPLACE VIEW v_eliska_population_density AS
+
+SELECT 
+    region_in_world, 
+    round(avg(population_density::numeric), 2) AS simple_avg_density, 
+    round(sum(surface_area::numeric * population_density::numeric) / sum(surface_area::numeric), 2) AS weighted_avg_density
+FROM countries c
+WHERE 
+    population_density IS NOT NULL 
+    AND region_in_world IS NOT NULL
+GROUP BY 
+    region_in_world;
+
+SELECT 
+    vd.*,
+    abs(simple_avg_density - weighted_avg_density) AS diff_avg_density
+FROM v_eliska_population_density vd 
+ORDER BY 
+    diff_avg_density DESC;
+
+-- Úkol 10: Vyberte název, hustotu zalidnění a rozlohu zemí v západní Evropě. 
+-- Najděte stát s nejvyšší hustotou zalidnění. Spočítejte obyčejný a vážený průměr hustoty zalidnění v západní Evropě 
+--kromě státu s nejvyšší hustotou. Výsledky srovnejte s oběma průměry spočítanými ze všech zemí.
+SELECT 
+    0 AS monaco_included,
+    round(avg(population_density::numeric), 2) AS simple_avg_density ,
+    round(sum(surface_area::numeric * population_density::numeric) / sum(surface_area::numeric), 2) AS weighted_avg_density
+FROM countries c 
+WHERE 
+    region_in_world = 'Western Europe' 
+    AND country != 'Monaco';
