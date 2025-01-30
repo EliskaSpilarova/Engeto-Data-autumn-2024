@@ -181,3 +181,44 @@ select confirmed
 from covid19_detail_us
 where province = 'Florida'
 	and date = '2020-08-30';
+
+-- Cvičení: Tvorba, úprava & vkládání do tabulek
+-- Úkol 1: Vytvořte tabulku t_{jméno}_{příjmení}_providers_south_moravia z tabulky healthcare_provider vyberte pouze Jihomoravský kraj.
+CREATE TABLE t_eliska_spilarova_providers_south_moravia AS
+ SELECT *
+ FROM healthcare_provider
+ WHERE region_code = 'CZ064';
+
+-- Úkol 2: Vytvořte tabulku t_{jméno}_{příjmení}_resume, kde budou sloupce date_start, date_end, job, education. 
+-- Sloupcům definujte vhodné datové typy.
+CREATE TABLE t_eliska_spilarova_resume (
+	date_start date,
+	date_end date,
+	education varchar(255),
+	job varchar(255)
+	);
+
+-- Úkol 3: Do tabulky t_{jméno}_{příjmení}_resume, kterou jste vytvořili v minulé části, vložte záznam se svým 
+-- současným zaměstnáním nebo studiem.
+INSERT INTO t_eliska_spilarova_resume
+VALUES ('2020-05-01', null, 'FF UK', 'lektorka');
+
+-- Úkol 4: K tabulce t_{jméno}_{příjmení}_resume přidejte dva sloupce: institution a role, které budou typu VARCHAR(255).
+ALTER TABLE t_eliska-spilarova_resume ADD COLUMN "institution" VARCHAR(255);
+
+ALTER TABLE t_eliska_spilarova_resume ADD COLUMN role VARCHAR(255);
+
+-- Úkol 5: Do tabulky t_{jméno}_{příjmení}_resume doplňte informace o tom, v jaké firmě nebo škole jste v daný čas působili 
+-- (sloupec institution) a na jaké pozici (sloupec role).
+UPDATE t_eliska_spilarova_resume
+SET institution = 'FF UK'
+WHERE date_start = '2020-05-01';
+
+UPDATE t_eliska_spilarova_resume
+SET "role" = 'MA student, OR with English Literature'
+WHERE date_start = '2020-05-01';
+
+-- Úkol 6: Z tabulky t_{jméno}_{příjmení}_resume vymažte sloupce education a job.
+ALTER TABLE t_eliska_spilarova_resume DROP COLUMN education;
+
+ALTER TABLE t_eliska_spilarova_resume DROP COLUMN job;
